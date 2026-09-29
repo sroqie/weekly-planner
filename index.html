@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Weekend Planner</title>
+<meta name="description" content="Unofficial planner for a Notre Dame home football weekend: record, countdown, and an hour-by-hour itinerary.">
+<!-- Data lives at the top of the <script> at the end of <body>: SEASON, ITINERARY, CHANGELOG. -->
+<style>
+:root {
+  --navy: #0C2340;
+  --navy-2: #1b3558;
+  --gold: #C99700;
+  --gold-soft: #faf4e2;
+  --ink: #16202e;
+  --muted: #4d5767;
+  --line: #dfe3ea;
+  --bg: #ffffff;
+  --panel: #f6f7f9;
+  --warn-bg: #fff7e3;
+  --focus: #1a5fb4;
+  --radius: 10px;
+  --gap: 1rem;
+  --on-navy: #ffffff;
+  --on-navy-muted: #d6dce6;
+  --on-navy-panel: rgba(255,255,255,.07);
+  --control-border: #9aa3b2;
+  --surface: #ffffff;
+  --print-ink: #000000;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-wrap: anywhere;
+}
+a { color: var(--navy); text-underline-offset: 2px; }
+a:hover { color: var(--navy-2); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 46rem; margin: 0 auto; padding: 0 16px; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+
+/* Header */
+.site-head { background: var(--navy); color: var(--on-navy); border-bottom: 4px solid var(--gold); }
+.site-head .wrap { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.eyebrow { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .35rem; color: var(--muted); }
+.site-head .eyebrow { color: var(--gold); }
+.site-head h1 { font-size: 1.6rem; }
+.head-stats { display: grid; gap: .75rem; margin-top: 1.1rem; }
+.stat { background: var(--on-navy-panel); border-radius: var(--radius); padding: .75rem .9rem; }
+.stat-label { font-size: .8rem; color: var(--on-navy-muted); margin: 0; }
+.stat-value { font-size: 1.35rem; font-weight: 700; margin: .1rem 0 0; }
+.stat-note { font-size: .88rem; color: var(--on-navy-muted); margin: .2rem 0 0; }
+
+main { padding: 1.5rem 0 2rem; }
+section { margin-bottom: 2rem; }
+.section-title { font-size: 1.2rem; color: var(--navy); margin-bottom: .75rem; }
+
+/* Controls */
+.controls { background: var(--panel); border-radius: var(--radius); padding: 1rem; display: grid; gap: 1rem; }
+.field label, .field legend { display: block; font-weight: 700; margin-bottom: .4rem; color: var(--navy); }
+.field fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+select {
+  width: 100%; min-height: 44px; font: inherit; color: var(--ink);
+  padding: .5rem .75rem; border: 1px solid var(--control-border); border-radius: 8px; background: var(--surface);
+}
+.field .radio-row {
+  display: flex; align-items: center; gap: .6rem; min-height: 44px;
+  padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
+  margin-bottom: .4rem; cursor: pointer; font-weight: 400;
+}
+.field .radio-row input { width: 1.2rem; height: 1.2rem; margin: 0; accent-color: var(--navy); }
+.radio-row:has(input:checked) { border-color: var(--navy); box-shadow: inset 4px 0 0 var(--gold); }
+.btn {
+  min-height: 44px; font: inherit; font-weight: 700; color: var(--on-navy); background: var(--navy);
+  border: 0; border-radius: 8px; padding: .6rem 1.1rem; cursor: pointer; width: 100%;
+}
+.btn:hover { background: var(--navy-2); }
+.hint { font-size: .88rem; color: var(--muted); margin: .4rem 0 0; }
+
+/* Itinerary */
+.plan-head { border-left: 4px solid var(--gold); padding-left: .85rem; margin-bottom: 1rem; }
+.plan-head h2 { font-size: 1.45rem; color: var(--navy); }
+.plan-sub { margin: .3rem 0 0; color: var(--ink); font-weight: 600; }
+.plan-arrival { margin: .15rem 0 0; color: var(--muted); }
+.note, .warn { border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem; }
+.note { background: var(--panel); border: 1px solid var(--line); }
+.warn { background: var(--warn-bg); border: 1px solid var(--gold); }
+.note p, .warn p { margin: 0; }
+.day { margin-bottom: 1.25rem; }
+.day h3 { font-size: 1.05rem; color: var(--navy); padding-bottom: .35rem; border-bottom: 2px solid var(--line); margin-bottom: .25rem; }
+.items { list-style: none; margin: 0; padding: 0; }
+.item { display: grid; grid-template-columns: 6.75rem 1fr; gap: .75rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
+.item:last-child { border-bottom: 0; }
+.time { font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.what strong { display: block; }
+.what p { margin: .2rem 0 0; }
+.item.key { background: var(--gold-soft); border-radius: 8px; padding-left: .5rem; padding-right: .5rem; }
+.verify { font-size: .88rem; color: var(--muted); }
+
+/* Tips, season, changelog */
+.tips { background: var(--panel); border-radius: var(--radius); padding: 1rem 1rem .5rem; }
+.tips ul { margin: 0; padding-left: 1.2rem; }
+.tips li { margin-bottom: .55rem; }
+.season-list, .log { list-style: none; margin: 0; padding: 0; }
+.season-list li { display: grid; grid-template-columns: 5.5rem 1fr auto; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.season-list .d { color: var(--muted); font-size: .92rem; }
+.season-list .r { font-weight: 700; text-align: right; }
+.pill { display: inline-block; font-size: .78rem; font-weight: 600; padding: .05rem .45rem; border-radius: 999px; border: 1px solid var(--gold); background: var(--gold-soft); color: var(--ink); }
+.log li { padding: .6rem 0; border-bottom: 1px solid var(--line); }
+.log time { display: block; font-size: .85rem; color: var(--muted); font-weight: 600; }
+
+footer { border-top: 1px solid var(--line); padding: 1.25rem 0 2rem; color: var(--muted); font-size: .9rem; }
+footer p { margin: 0; }
+
+@media (min-width: 40rem) {
+  .head-stats { grid-template-columns: 1fr 2fr; }
+  .controls { grid-template-columns: 1fr 1fr; align-items: start; }
+  .controls .full { grid-column: 1 / -1; }
+  .btn { width: auto; }
+  .item { grid-template-columns: 8rem 1fr; }
+}
+
+/* Parents mode: print only the itinerary */
+@media print {
+  @page { margin: 0.6in; }
+  body { font-size: 11pt; color: var(--print-ink); background: var(--surface); }
+  .site-head, #controls, #tips, #season, #changelog, footer, button, select, input, .no-print { display: none !important; }
+  main, .wrap { padding: 0; max-width: none; }
+  #plan { margin: 0; }
+  .plan-head { border-left: 0; padding-left: 0; }
+  .plan-head h2 { font-size: 18pt; color: var(--print-ink); }
+  .eyebrow, .plan-sub, .plan-arrival, .time, .day h3, .verify { color: var(--print-ink); }
+  .note, .warn { background: none; border: 1px solid var(--print-ink); }
+  .item.key { background: none; border-radius: 0; padding-left: 0; padding-right: 0; }
+  .item { grid-template-columns: 1.3in 1fr; break-inside: avoid; page-break-inside: avoid; }
+  .day h3 { break-after: avoid; page-break-after: avoid; }
+  a { color: var(--print-ink); text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <p class="eyebrow" id="season-label">Notre Dame home weekends</p>
+    <h1>Football Weekend Planner</h1>
+    <div class="head-stats">
+      <div class="stat">
+        <p class="stat-label">Record</p>
+        <p class="stat-value" id="record">&nbsp;</p>
+      </div>
+      <div class="stat">
+        <p class="stat-label" id="countdown-label">Next home game</p>
+        <p class="stat-value" id="countdown">&nbsp;</p>
+        <p class="stat-note" id="countdown-note"></p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section id="controls" aria-labelledby="controls-title">
+      <h2 class="section-title" id="controls-title">Plan your weekend</h2>
+      <div class="controls">
+        <div class="field">
+          <label for="game">Which game?</label>
+          <select id="game"></select>
+        </div>
+        <div class="field">
+          <fieldset>
+            <legend>When do you arrive?</legend>
+            <div id="arrival"></div>
+          </fieldset>
+        </div>
+        <div class="field full">
+          <button type="button" class="btn" id="print">Print for parents</button>
+          <p class="hint">Prints only the itinerary below, with the game and date as the heading.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="plan" aria-labelledby="plan-title">
+      <div class="plan-head">
+        <p class="eyebrow">Weekend itinerary</p>
+        <h2 id="plan-title">&nbsp;</h2>
+        <p class="plan-sub" id="plan-sub"></p>
+        <p class="plan-arrival" id="plan-arrival"></p>
+      </div>
+      <div class="note" id="tba-note" hidden><p id="tba-text"></p></div>
+      <div class="warn" id="parking"><p id="parking-text"></p></div>
+      <div id="days"></div>
+    </section>
+
+    <section id="tips" aria-labelledby="tips-title">
+      <div class="tips">
+        <h2 class="section-title" id="tips-title">First-time visitors</h2>
+        <ul id="tips-list"></ul>
+      </div>
+    </section>
+
+    <section id="season" aria-labelledby="season-title">
+      <h2 class="section-title" id="season-title">Season so far</h2>
+      <ul class="season-list" id="season-list"></ul>
+    </section>
+
+    <section id="changelog" aria-labelledby="changelog-title">
+      <h2 class="section-title" id="changelog-title">This week</h2>
+      <ul class="log" id="log"></ul>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by [YOUR NAME], MBA 70374, University of Notre Dame. Unofficial; not affiliated with the University or Athletics.</p>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   SEASON — all game data. Weekly updates edit this object and CHANGELOG only.
+   kickoff: "TBA" or 24-hour Eastern Time "HH:MM" (3:30 PM ET = "15:30").
+   result: "W" | "L" | null. score: Notre Dame first ("49-10"), "to confirm", or null.
+   The record and the next home game are computed from this list.
+   ===================================================================== */
+const SEASON = {
+  year: 2026,
+  team: "Notre Dame Fighting Irish",
+  games: [
+    { opponent: "Wisconsin",      date: "2026-09-06", site: "neutral", venue: "Lambeau Field",      kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
+    { opponent: "Rice",           date: "2026-09-12", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
+    { opponent: "Michigan State", date: "2026-09-19", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
+    { opponent: "Purdue",         date: "2026-09-26", site: "away",    venue: "",                   kickoff: "TBA", played: true,  result: "W",  score: "49-10" },
+    { opponent: "Stanford",       date: "2026-10-10", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "Navy",           date: "2026-10-31", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "Miami",          date: "2026-11-07", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "Boston College", date: "2026-11-14", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "SMU",            date: "2026-11-21", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null }
+  ]
+};
+
+/* =====================================================================
+   CHANGELOG — newest entry first. Add one entry per weekly update.
+   ===================================================================== */
+const CHANGELOG = [
+  { date: "2026-09-28", text: "Planner published. Season data entered through the Purdue game." }
+];
+
+/* =====================================================================
+   ITINERARY — templates and copy. No dates here; days are computed from SEASON.
+   Fixed-day items use "time" (24h ET). Saturday items use an anchor + offset in minutes:
+     anchor "kickoff" = kickoff, "park" = kickoff minus the crowd's lead time,
+     "end" = kickoff plus gameLengthMin.
+   Tokens in text: {opponent} {parkWhen} {exitRange} {earliestPark} {earliestArrive}
+   ===================================================================== */
+const ITINERARY = {
+  gameLengthMin: 210,
+  tbaNoonMin: 720,
+  arrivals: [
+    { id: "thu", label: "Thursday evening" },
+    { id: "fri", label: "Friday" },
+    { id: "sat", label: "Saturday morning" }
+  ],
+  defaultArrival: "fri",
+  crowdLevels: {
+    standard: { leadMin: 240, exitRange: "45 to 75 minutes" },
+    high:     { leadMin: 300, exitRange: "60 to 90 minutes" },
+    highest:  { leadMin: 360, exitRange: "90 minutes to 2 hours or more" }
+  },
+  opponents: {
+    "Stanford":       { crowd: "standard", parking: "Typical game-day crowd, but every home game draws heavy traffic in the last mile. Be parked {parkWhen}." },
+    "Navy":           { crowd: "high",     parking: "Expect a bigger crowd than usual: Navy is one of the longest-running series on the schedule and brings a large visiting following. Be parked {parkWhen}." },
+    "Miami":          { crowd: "highest",  parking: "The biggest crowd of the home season. Expect the heaviest traffic, the fullest lots, and the highest hotel prices. Be parked {parkWhen}, and budget {exitRange} to get out afterward. Arrive Thursday or Friday if you can." },
+    "Boston College": { crowd: "standard", parking: "Typical crowd, but late-season cold slows everything: lines, the walk in, and the exit. Be parked {parkWhen}." },
+    "SMU":            { crowd: "standard", parking: "Typical game-day crowd, but every home game draws heavy traffic in the last mile. Be parked {parkWhen}." }
+  },
+  defaultOpponent: { crowd: "high", parking: "Crowd size for this game has not been rated yet, so plan for a big one. Be parked {parkWhen}." },
+  weatherByMonth: {
+    "9":  "Late-summer sun: bring sunscreen and water for a long day outside.",
+    "10": "October in South Bend: cool mornings, mild afternoons, cold after dark. Dress in layers.",
+    "11": "November in South Bend: dress for real cold, possibly wind and snow. Hat, gloves, and a blanket (check bag rules) are worth it."
+  },
+  tbaNote: "Kickoff is TBA. Saturday times below are relative to kickoff (for example \"Kickoff −3h\"). They become clock times once kickoff is announced. Until then, keep all of Saturday open: if kickoff lands at noon ET, your parking target would be {earliestPark}.",
+  days: {
+    thu: [
+      { time: "19:00", arrivals: ["thu"], title: "Arrive and check in", text: "Settle into your hotel and get dinner nearby. Game-weekend restaurants fill up, so book Friday and Saturday dinners now if you have not already." },
+      { time: "21:00", arrivals: ["thu"], title: "Early night", text: "Friday is a full walking day. Lay out comfortable shoes and download your mobile tickets while the hotel Wi-Fi is quiet." }
+    ],
+    fri: [
+      { time: "09:00", arrivals: ["thu"], title: "Breakfast", text: "Eat well; you will walk a few miles today." },
+      { time: "10:00", arrivals: ["thu"], title: "Campus walk", text: "Start at Main Circle and walk up to the Main Building and the Golden Dome, then across God Quad and South Quad to Hesburgh Library and its Word of Life mural. Friday is the best day to see campus before the Saturday crowds." },
+      { time: "12:00", arrivals: ["thu"], title: "Lunch on or near campus", text: "Eat before the afternoon rush; campus dining spots get busier as visitors arrive through the day." },
+      { time: "12:00", arrivals: ["fri"], title: "Arrive in South Bend", text: "Hotel check-in is often mid-afternoon; drop your bags or park and head straight to campus." },
+      { time: "13:30", arrivals: ["thu", "fri"], title: "Basilica of the Sacred Heart", text: "Step inside to see the murals and stained glass. Services and weddings take priority over visitors, so check the schedule first.", verify: true },
+      { time: "14:30", arrivals: ["fri"], title: "Short campus walk", text: "From the Basilica, walk past the Main Building and Golden Dome, across God Quad, and out to Hesburgh Library and its Word of Life mural." },
+      { time: "15:30", arrivals: ["thu", "fri"], title: "Hammes Notre Dame Bookstore", text: "Shop on Friday. On Saturday the lines stretch out the door. Hours are extended on football weekends.", verify: true },
+      { time: "17:30", arrivals: ["thu", "fri"], title: "Dinner", text: "Reserve ahead. Restaurants near campus and downtown South Bend are packed on football Fridays." },
+      { time: "19:30", arrivals: ["thu", "fri"], title: "Friday evening events", text: "Some weekends have a pep rally or other Friday events; details and times change from game to game.", verify: true },
+      { time: "21:00", arrivals: ["thu", "fri"], title: "The Grotto at night", text: "Walk down behind the Basilica to the Grotto. It is quiet, candle-lit, and one of the best moments of the weekend. Bring a lighter or a dollar for a candle." }
+    ],
+    sat: [
+      { anchor: "park", offset: -90, arrivals: ["thu", "fri"], title: "Eat a real meal", text: "Stadium concession lines are long. Eat before you head in and bring water." },
+      { anchor: "park", offset: -60, arrivals: ["sat"], title: "Reach the South Bend area", text: "Time your drive so you are in town an hour before your parking target. Game-day traffic on the highway exits and the roads into campus builds hours before kickoff.", tbaText: "Until kickoff is announced you cannot time this drive; if kickoff lands at noon ET you would need to be in town by {earliestArrive}." },
+      { anchor: "park", offset: 0, arrivals: ["thu", "fri", "sat"], title: "Be parked", text: "Park by now for the {opponent} game. Many lots near the stadium require a parking pass bought in advance; others take payment on game day. Know which lot you are going to before you leave.", verify: true },
+      { anchor: "kickoff", offset: -180, arrivals: ["thu", "fri", "sat"], title: "Walk campus and tailgate", text: "Tailgates fill the lots and fields around the stadium. Walk the quads, stop at the Grotto, and find your group." },
+      { anchor: "kickoff", offset: -120, arrivals: ["thu", "fri", "sat"], title: "Player walk", text: "The team walks through campus to the stadium. Get to the route early; the crowd along the rope lines is several people deep.", verify: true },
+      { anchor: "kickoff", offset: -105, arrivals: ["thu", "fri", "sat"], title: "Band concert", text: "The Band of the Fighting Irish plays a pre-game concert on campus, then marches to the stadium. One of the best free events of the weekend.", verify: true },
+      { anchor: "kickoff", offset: -90, arrivals: ["thu", "fri", "sat"], title: "Stadium gates open", text: "Clear-bag rules apply. Have your mobile ticket loaded before you reach the gate; cell service near the stadium slows down badly.", verify: true },
+      { anchor: "kickoff", offset: -40, arrivals: ["thu", "fri", "sat"], title: "Be in your seat", text: "Do not miss the band's pre-game show on the field and the team running out of the tunnel." },
+      { anchor: "kickoff", offset: 0, arrivals: ["thu", "fri", "sat"], title: "Kickoff", text: "Notre Dame vs. {opponent}.", key: true },
+      { anchor: "end", offset: 0, arrivals: ["thu", "fri", "sat"], title: "Final whistle (approximate)", text: "Games run about three and a half hours with TV timeouts. Stay for the Alma Mater after the game." },
+      { anchor: "end", offset: 15, arrivals: ["thu", "fri", "sat"], title: "Exit plan", text: "Do not race to the car. Walk out with your group to a pre-agreed meeting spot away from the gates, then expect {exitRange} to get out of the lots and onto the highway. Leaving 30 to 45 minutes after the game often gets you home no later than rushing out would." },
+      { anchor: "end", offset: 120, arrivals: ["thu", "fri", "sat"], title: "Dinner or a late bite", text: "Book ahead, or eat away from the stadium corridor. After a night game, have snacks at the hotel; many kitchens close early." }
+    ],
+    sun: [
+      { time: "10:00", arrivals: ["thu", "fri", "sat"], title: "Late breakfast", text: "Sleep in, check out, and have a slow breakfast. Many visitors go to Sunday Mass at the Basilica first.", verify: true },
+      { time: "11:30", arrivals: ["thu", "fri", "sat"], title: "Drive out", text: "Sunday traffic is lighter than Saturday night. Heading to Chicago? It is on Central Time, one hour behind South Bend." }
+    ]
+  },
+  tips: [
+    { text: "All times on this page are Eastern Time (ET), the time zone in South Bend." },
+    { text: "Stadium bag rules are strict: plan on a small clear bag or a small clutch only.", verify: true },
+    { text: "Load mobile tickets and parking passes into your phone's wallet before you leave the hotel. Cell service around the stadium is slow on game day." },
+    { text: "Pick a meeting spot away from the stadium in case your group gets separated and phones fail." },
+    { text: "Wear comfortable shoes. Between parking, the campus walk, and the stadium, a game day is easily several miles on foot." },
+    { text: "Concessions and the bookstore take cards; check the latest payment rules before you rely on cash.", verify: true },
+    { text: "Stay for the Alma Mater after the game, win or lose." }
+  ],
+  verifyUrl: "https://gameday.nd.edu",
+  verifyLabel: "gameday.nd.edu"
+};
+
+/* =====================================================================
+   Rendering. Reads SEASON, ITINERARY, CHANGELOG. No data below this line.
+   ===================================================================== */
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MINUS = "−";
+const $ = (id) => document.getElementById(id);
+
+function isoParts(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return { y, m, d };
+}
+function utcDay(iso, addDays) {
+  const p = isoParts(iso);
+  return new Date(Date.UTC(p.y, p.m - 1, p.d + (addDays || 0)));
+}
+function fmtDate(iso, addDays, style) {
+  const dt = utcDay(iso, addDays);
+  const wd = WEEKDAYS[dt.getUTCDay()], mo = MONTHS[dt.getUTCMonth()], d = dt.getUTCDate();
+  if (style === "short") return mo.slice(0, 3) + " " + d;
+  if (style === "picker") return wd.slice(0, 3) + ", " + mo.slice(0, 3) + " " + d;
+  if (style === "day") return wd + ", " + mo + " " + d;
+  return wd + ", " + mo + " " + d + ", " + dt.getUTCFullYear();
+}
+function kickoffMin(game) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(game.kickoff || "").trim());
+  if (!m) return null;
+  const h = Number(m[1]), mm = Number(m[2]);
+  if (h > 23 || mm > 59) return null;
+  return h * 60 + mm;
+}
+function fmtClock(min) {
+  const t = ((min % 1440) + 1440) % 1440;
+  const h24 = Math.floor(t / 60), mm = t % 60;
+  const s = (h24 % 12 || 12) + ":" + String(mm).padStart(2, "0") + " " + (h24 < 12 ? "AM" : "PM");
+  return min >= 1440 ? s + " (after midnight)" : s;
+}
+function fmtRel(rel) {
+  if (rel === 0) return "Kickoff";
+  const a = Math.abs(rel), h = Math.floor(a / 60), m = a % 60;
+  const body = h ? h + "h" + (m ? String(m).padStart(2, "0") : "") : m + "m";
+  return "Kickoff " + (rel < 0 ? MINUS : "+") + body;
+}
+function fmtHours(min) {
+  const h = Math.floor(min / 60), m = min % 60;
+  return (h ? h + (h === 1 ? " hour" : " hours") : "") + (m ? (h ? " " : "") + m + " minutes" : "");
+}
+function fmtKickoff(game) {
+  const k = kickoffMin(game);
+  return k === null ? "Kickoff TBA" : "Kickoff " + fmtClock(k) + " ET";
+}
+// Eastern Time: DST from the second Sunday of March to the first Sunday of November.
+function isEDT(y, m, d) {
+  if (m < 3 || m > 11) return false;
+  if (m > 3 && m < 11) return true;
+  const firstDow = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+  const firstSunday = 1 + ((7 - firstDow) % 7);
+  return m === 3 ? d >= firstSunday + 7 : d < firstSunday;
+}
+function etInstant(iso, minutes) {
+  const p = isoParts(iso);
+  const offsetMin = isEDT(p.y, p.m, p.d) ? 240 : 300;
+  return Date.UTC(p.y, p.m - 1, p.d) + (minutes + offsetMin) * 60000;
+}
+function fill(text, ctx) {
+  return String(text).replace(/\{(\w+)\}/g, (all, k) => (k in ctx ? ctx[k] : all));
+}
+function el(tag, attrs, children) {
+  const node = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === "text") node.textContent = attrs[k];
+    else if (k === "className") node.className = attrs[k];
+    else node.setAttribute(k, attrs[k]);
+  }
+  (children || []).forEach((c) => c && node.appendChild(c));
+  return node;
+}
+
+// Storage: optional, never required for rendering.
+function load(key) {
+  try { return window.localStorage.getItem("fwp." + key); } catch (e) { return null; }
+}
+function save(key, value) {
+  try { window.localStorage.setItem("fwp." + key, value); } catch (e) { /* storage unavailable */ }
+}
+
+// Derived data
+function byDate(a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }
+function upcomingHomeGames() {
+  return SEASON.games.filter((g) => g.site === "home" && !g.played).sort(byDate);
+}
+function record() {
+  let w = 0, l = 0;
+  SEASON.games.forEach((g) => {
+    if (!g.played) return;
+    if (g.result === "W") w++;
+    else if (g.result === "L") l++;
+  });
+  return w + "–" + l;
+}
+function crowdFor(game) {
+  const o = ITINERARY.opponents[game.opponent] || ITINERARY.defaultOpponent;
+  const level = ITINERARY.crowdLevels[o.crowd] || ITINERARY.crowdLevels.high;
+  return { parking: o.parking, leadMin: level.leadMin, exitRange: level.exitRange };
+}
+
+const state = { gameDate: null, arrival: ITINERARY.defaultArrival };
+
+function initState() {
+  const games = upcomingHomeGames();
+  const storedGame = load("game");
+  const pick = games.find((g) => g.date === storedGame) || games[0];
+  state.gameDate = pick ? pick.date : null;
+  const storedArrival = load("arrival");
+  if (ITINERARY.arrivals.some((a) => a.id === storedArrival)) state.arrival = storedArrival;
+}
+function selectedGame() {
+  return upcomingHomeGames().find((g) => g.date === state.gameDate) || null;
+}
+
+function renderHeader() {
+  $("season-label").textContent = SEASON.year + " season · unofficial";
+  $("record").textContent = record();
+  const next = upcomingHomeGames()[0];
+  const label = $("countdown-label"), value = $("countdown"), note = $("countdown-note");
+  if (!next) {
+    label.textContent = "Home season";
+    value.textContent = "Complete";
+    note.textContent = "No unplayed home games remain in the schedule.";
+    return;
+  }
+  const k = kickoffMin(next);
+  const target = etInstant(next.date, k === null ? ITINERARY.tbaNoonMin : k);
+  const diff = target - Date.now();
+  label.textContent = "Next home game: " + next.opponent + ", " + fmtDate(next.date, 0, "day");
+  if (diff > 0) {
+    const mins = Math.floor(diff / 60000);
+    const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+    value.textContent = d + (d === 1 ? " day, " : " days, ") + h + (h === 1 ? " hour, " : " hours, ") + m + (m === 1 ? " minute" : " minutes");
+    note.textContent = k === null
+      ? "Kickoff is TBA, so this counts down to noon ET on game day."
+      : "Until kickoff at " + fmtClock(k) + " ET.";
+  } else if (diff > -8 * 3600000) {
+    value.textContent = "It is game day";
+    note.textContent = k === null ? "Kickoff time was not entered." : "Kickoff " + fmtClock(k) + " ET.";
+  } else {
+    value.textContent = "Result pending";
+    note.textContent = "This game has been played; the planner has not been updated yet.";
+  }
+}
+
+function renderControls() {
+  const select = $("game");
+  select.textContent = "";
+  const games = upcomingHomeGames();
+  if (!games.length) {
+    select.appendChild(el("option", { value: "", text: "No upcoming home games" }));
+    select.disabled = true;
+  } else {
+    select.disabled = false;
+    games.forEach((g, i) => {
+      const label = g.opponent + " — " + fmtDate(g.date, 0, "picker") + (i === 0 ? " (next)" : "");
+      const opt = el("option", { value: g.date, text: label });
+      if (g.date === state.gameDate) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+  const box = $("arrival");
+  box.textContent = "";
+  ITINERARY.arrivals.forEach((a) => {
+    const input = el("input", { type: "radio", name: "arrival", value: a.id, id: "arrive-" + a.id });
+    if (a.id === state.arrival) input.checked = true;
+    input.addEventListener("change", () => {
+      state.arrival = a.id;
+      save("arrival", a.id);
+      renderPlan();
+    });
+    box.appendChild(el("label", { className: "radio-row", for: "arrive-" + a.id }, [input, el("span", { text: a.label })]));
+  });
+}
+
+function verifyLine() {
+  const a = el("a", { href: ITINERARY.verifyUrl, text: ITINERARY.verifyLabel, rel: "noopener" });
+  const p = el("p", { className: "verify" });
+  p.appendChild(document.createTextNode("Time-sensitive: verify on "));
+  p.appendChild(a);
+  return p;
+}
+
+function renderPlan() {
+  const game = selectedGame();
+  const days = $("days");
+  days.textContent = "";
+  if (!game) {
+    $("plan-title").textContent = "No upcoming home games";
+    $("plan-sub").textContent = "The itinerary will return when the next season's schedule is entered.";
+    $("plan-arrival").textContent = "";
+    $("tba-note").hidden = true;
+    $("parking").hidden = true;
+    return;
+  }
+  const k = kickoffMin(game);
+  const crowd = crowdFor(game);
+  const arrival = ITINERARY.arrivals.find((a) => a.id === state.arrival) || ITINERARY.arrivals[0];
+  const parkRel = -crowd.leadMin;
+  const ctx = {
+    opponent: game.opponent,
+    parkWhen: k === null
+      ? fmtHours(crowd.leadMin) + " before kickoff"
+      : "by " + fmtClock(k + parkRel) + ", " + fmtHours(crowd.leadMin) + " before kickoff",
+    exitRange: crowd.exitRange,
+    earliestPark: fmtClock(ITINERARY.tbaNoonMin + parkRel),
+    earliestArrive: fmtClock(ITINERARY.tbaNoonMin + parkRel - 60)
+  };
+
+  $("plan-title").textContent = "Notre Dame vs. " + game.opponent;
+  $("plan-sub").textContent = fmtDate(game.date) + " · " + (game.venue || "Venue TBA") + " · " + fmtKickoff(game);
+  $("plan-arrival").textContent = "Arriving " + arrival.label + " · all times ET";
+
+  $("tba-note").hidden = k !== null;
+  $("tba-text").textContent = fill(ITINERARY.tbaNote, ctx);
+  $("parking").hidden = false;
+  const weather = ITINERARY.weatherByMonth[String(isoParts(game.date).m)];
+  $("parking-text").textContent = "Parking warning: " + fill(crowd.parking, ctx) + (weather ? " " + weather : "");
+
+  const dayPlan = [
+    { key: "thu", add: -2 },
+    { key: "fri", add: -1 },
+    { key: "sat", add: 0 },
+    { key: "sun", add: 1 }
+  ];
+  dayPlan.forEach((day) => {
+    const templates = ITINERARY.days[day.key].filter((it) => it.arrivals.indexOf(arrival.id) !== -1);
+    if (!templates.length) return;
+    let rows;
+    if (day.key === "sat") {
+      rows = templates.map((it) => {
+        const base = it.anchor === "park" ? parkRel : it.anchor === "end" ? ITINERARY.gameLengthMin : 0;
+        const rel = base + it.offset;
+        return { it, sort: rel, time: k === null ? fmtRel(rel) : fmtClock(k + rel) };
+      });
+    } else {
+      rows = templates.map((it) => {
+        const [h, m] = it.time.split(":").map(Number);
+        const min = h * 60 + m;
+        return { it, sort: min, time: fmtClock(min) };
+      });
+    }
+    rows.sort((a, b) => a.sort - b.sort);
+    const list = el("ol", { className: "items" });
+    rows.forEach((r) => {
+      const text = k === null && r.it.tbaText ? r.it.text + " " + r.it.tbaText : r.it.text;
+      const what = el("div", { className: "what" }, [
+        el("strong", { text: r.it.title }),
+        el("p", { text: fill(text, ctx) }),
+        r.it.verify ? verifyLine() : null
+      ]);
+      list.appendChild(el("li", { className: "item" + (r.it.key ? " key" : "") }, [
+        el("div", { className: "time", text: r.time }),
+        what
+      ]));
+    });
+    days.appendChild(el("section", { className: "day", "aria-label": fmtDate(game.date, day.add, "day") }, [
+      el("h3", { text: fmtDate(game.date, day.add, "day") }),
+      list
+    ]));
+  });
+}
+
+function renderTips() {
+  const ul = $("tips-list");
+  ul.textContent = "";
+  ITINERARY.tips.forEach((t) => {
+    const li = el("li", null, [document.createTextNode(t.text)]);
+    if (t.verify) {
+      li.appendChild(document.createTextNode(" Verify on "));
+      li.appendChild(el("a", { href: ITINERARY.verifyUrl, text: ITINERARY.verifyLabel, rel: "noopener" }));
+      li.appendChild(document.createTextNode("."));
+    }
+    ul.appendChild(li);
+  });
+}
+
+function renderSeason() {
+  const ul = $("season-list");
+  ul.textContent = "";
+  SEASON.games.slice().sort(byDate).forEach((g) => {
+    const where = g.site === "away" ? "at " : "vs. ";
+    const place = g.site === "neutral" ? " (" + (g.venue || "neutral site") + ")" : "";
+    let result;
+    if (!g.played) result = el("span", { text: kickoffMin(g) === null ? "TBA" : fmtClock(kickoffMin(g)) });
+    else if (g.score === "to confirm" || !g.score) result = el("span", null, [document.createTextNode((g.result || "") + " "), el("span", { className: "pill", text: "score to confirm" })]);
+    else result = el("span", { text: g.result + " " + g.score.replace("-", "–") });
+    ul.appendChild(el("li", null, [
+      el("span", { className: "d", text: fmtDate(g.date, 0, "short") }),
+      el("span", { text: where + g.opponent + place }),
+      el("span", { className: "r" }, [result])
+    ]));
+  });
+}
+
+function renderChangelog() {
+  const ul = $("log");
+  ul.textContent = "";
+  CHANGELOG.slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0)).forEach((c) => {
+    ul.appendChild(el("li", null, [
+      el("time", { datetime: c.date, text: fmtDate(c.date) }),
+      el("span", { text: c.text })
+    ]));
+  });
+}
+
+initState();
+renderHeader();
+renderControls();
+renderPlan();
+renderTips();
+renderSeason();
+renderChangelog();
+
+$("game").addEventListener("change", (e) => {
+  state.gameDate = e.target.value;
+  save("game", state.gameDate);
+  renderPlan();
+});
+$("print").addEventListener("click", () => window.print());
+setInterval(renderHeader, 30000);
+</script>
+</body>
+</html>
