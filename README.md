@@ -4,7 +4,7 @@ An unofficial, single-page planner for a Notre Dame home football weekend: the s
 a countdown to the next home game, and an hour-by-hour itinerary from arrival to Sunday
 morning that you can print for parents.
 
-**Live site:** https://USERNAME.github.io
+**Live site:** https://sroqie.github.io/weekly-planner/
 
 The whole site is one file, `index.html`. No server, no build step.
 
