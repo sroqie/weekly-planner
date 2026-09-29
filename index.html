@@ -86,6 +86,7 @@ select {
 .plan-head h2 { font-size: 1.45rem; color: var(--navy); }
 .plan-sub { margin: .3rem 0 0; color: var(--ink); font-weight: 600; }
 .plan-arrival { margin: .15rem 0 0; color: var(--muted); }
+.plan-pack { margin: .5rem 0 0; color: var(--ink); }
 .note, .warn { border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem; }
 .note { background: var(--panel); border: 1px solid var(--line); }
 .warn { background: var(--warn-bg); border: 1px solid var(--gold); }
@@ -100,6 +101,10 @@ select {
 .what p { margin: .2rem 0 0; }
 .item.key { background: var(--gold-soft); border-radius: 8px; padding-left: .5rem; padding-right: .5rem; }
 .verify { font-size: .88rem; color: var(--muted); }
+.eats { background: var(--gold-soft); border-left: 4px solid var(--gold); border-radius: 8px; padding: .8rem 1rem; margin-top: .75rem; break-inside: avoid; }
+.eats h4 { margin: 0 0 .3rem; font-size: 1rem; color: var(--navy); }
+.eats p { margin: 0 0 .4rem; }
+.eats ul { margin: 0; padding-left: 1.2rem; }
 
 /* Tips, season, changelog */
 .tips { background: var(--panel); border-radius: var(--radius); padding: 1rem 1rem .5rem; }
@@ -133,9 +138,11 @@ footer p { margin: 0; }
   #plan { margin: 0; }
   .plan-head { border-left: 0; padding-left: 0; }
   .plan-head h2 { font-size: 18pt; color: var(--print-ink); }
-  .eyebrow, .plan-sub, .plan-arrival, .time, .day h3, .verify { color: var(--print-ink); }
+  .eyebrow, .plan-sub, .plan-arrival, .plan-pack, .time, .day h3, .verify { color: var(--print-ink); }
   .note, .warn { background: none; border: 1px solid var(--print-ink); }
   .item.key { background: none; border-radius: 0; padding-left: 0; padding-right: 0; }
+  .eats { background: none; border: 1px solid var(--print-ink); }
+  .eats h4 { color: var(--print-ink); }
   .item { grid-template-columns: 1.3in 1fr; break-inside: avoid; page-break-inside: avoid; }
   .day h3 { break-after: avoid; page-break-after: avoid; }
   a { color: var(--print-ink); text-decoration: none; }
@@ -191,6 +198,7 @@ footer p { margin: 0; }
         <h2 id="plan-title">&nbsp;</h2>
         <p class="plan-sub" id="plan-sub"></p>
         <p class="plan-arrival" id="plan-arrival"></p>
+        <p class="plan-pack" id="plan-pack"></p>
       </div>
       <div class="note" id="tba-note" hidden><p id="tba-text"></p></div>
       <div class="warn" id="parking"><p id="parking-text"></p></div>
@@ -219,7 +227,7 @@ footer p { margin: 0; }
 
 <footer>
   <div class="wrap">
-    <p>Built by [YOUR NAME], MBA 70374, University of Notre Dame. Unofficial; not affiliated with the University or Athletics.</p>
+    <p>Built by Sam, MBA 70374, University of Notre Dame. Unofficial; not affiliated with the University or Athletics.</p>
   </div>
 </footer>
 
@@ -265,6 +273,7 @@ const ITINERARY = {
   tbaNoonMin: 720,
   arrivals: [
     { id: "thu", label: "Thursday evening" },
+    { id: "thu-chi", label: "Thursday evening, driving from Chicago", sameAs: "thu" },
     { id: "fri", label: "Friday" },
     { id: "sat", label: "Saturday morning" }
   ],
@@ -287,9 +296,20 @@ const ITINERARY = {
     "10": "October in South Bend: cool mornings, mild afternoons, cold after dark. Dress in layers.",
     "11": "November in South Bend: dress for real cold, possibly wind and snow. Hat, gloves, and a blanket (check bag rules) are worth it."
   },
+  packByMonth: {
+    "9":  "sunscreen, hat, sunglasses, a refillable water bottle, comfortable shoes, a phone charger, and a small clear bag.",
+    "10": "a light jacket or layers, a rain layer, comfortable shoes, a phone charger, and a small clear bag.",
+    "11": "a warm coat, hat, gloves, warm socks, comfortable shoes, a phone charger, and a small clear bag (check bag rules before bringing a blanket)."
+  },
+  fridayEats: {
+    title: "Where to eat Friday night",
+    intro: "Three picks. Football Fridays fill up, so reserve ahead where you can.",
+    picks: ["Fiddlers Hearth", "Golden Corral", "Nicks Patio"]
+  },
   tbaNote: "Kickoff is TBA. Saturday times below are relative to kickoff (for example \"Kickoff −3h\"). They become clock times once kickoff is announced. Until then, keep all of Saturday open: if kickoff lands at noon ET, your parking target would be {earliestPark}.",
   days: {
     thu: [
+      { time: "16:30", arrivals: ["thu-chi"], title: "Leave Chicago", text: "The drive is about 90 miles and usually takes 1.5 to 2 hours, more with Thursday rush-hour traffic on the Skyway and I-94. Chicago is on Central Time, one hour behind South Bend: 16:30 ET is 3:30 PM at home." },
       { time: "19:00", arrivals: ["thu"], title: "Arrive and check in", text: "Settle into your hotel and get dinner nearby. Game-weekend restaurants fill up, so book Friday and Saturday dinners now if you have not already." },
       { time: "21:00", arrivals: ["thu"], title: "Early night", text: "Friday is a full walking day. Lay out comfortable shoes and download your mobile tickets while the hotel Wi-Fi is quiet." }
     ],
@@ -534,6 +554,7 @@ function renderPlan() {
     $("plan-title").textContent = "No upcoming home games";
     $("plan-sub").textContent = "The itinerary will return when the next season's schedule is entered.";
     $("plan-arrival").textContent = "";
+    $("plan-pack").textContent = "";
     $("tba-note").hidden = true;
     $("parking").hidden = true;
     return;
@@ -555,6 +576,8 @@ function renderPlan() {
   $("plan-title").textContent = "Notre Dame vs. " + game.opponent;
   $("plan-sub").textContent = fmtDate(game.date) + " · " + (game.venue || "Venue TBA") + " · " + fmtKickoff(game);
   $("plan-arrival").textContent = "Arriving " + arrival.label + " · all times ET";
+  const pack = ITINERARY.packByMonth[String(isoParts(game.date).m)];
+  $("plan-pack").textContent = pack ? "What to pack: " + pack : "";
 
   $("tba-note").hidden = k !== null;
   $("tba-text").textContent = fill(ITINERARY.tbaNote, ctx);
@@ -569,7 +592,8 @@ function renderPlan() {
     { key: "sun", add: 1 }
   ];
   dayPlan.forEach((day) => {
-    const templates = ITINERARY.days[day.key].filter((it) => it.arrivals.indexOf(arrival.id) !== -1);
+    const templates = ITINERARY.days[day.key].filter((it) =>
+      it.arrivals.indexOf(arrival.id) !== -1 || (arrival.sameAs && it.arrivals.indexOf(arrival.sameAs) !== -1));
     if (!templates.length) return;
     let rows;
     if (day.key === "sat") {
@@ -599,10 +623,16 @@ function renderPlan() {
         what
       ]));
     });
+    const eats = day.key === "fri" ? ITINERARY.fridayEats : null;
     days.appendChild(el("section", { className: "day", "aria-label": fmtDate(game.date, day.add, "day") }, [
       el("h3", { text: fmtDate(game.date, day.add, "day") }),
-      list
-    ]));
+      list,
+      eats ? el("div", { className: "eats" }, [
+        el("h4", { text: eats.title }),
+        el("p", { text: eats.intro }),
+        el("ul", null, eats.picks.map((p) => el("li", { text: p })))
+      ]) : null
+    ].filter(Boolean)));
   });
 }
 
