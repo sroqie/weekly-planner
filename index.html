@@ -8,143 +8,166 @@
 <!-- Data lives at the top of the <script> at the end of <body>: SEASON, ITINERARY, CHANGELOG. -->
 <style>
 :root {
+  color-scheme: dark;
   --navy: #0C2340;
-  --navy-2: #1b3558;
   --gold: #C99700;
-  --gold-soft: #faf4e2;
-  --ink: #16202e;
-  --muted: #4d5767;
-  --line: #dfe3ea;
-  --bg: #ffffff;
-  --panel: #f6f7f9;
-  --warn-bg: #fff7e3;
-  --focus: #1a5fb4;
-  --radius: 10px;
-  --gap: 1rem;
-  --on-navy: #ffffff;
-  --on-navy-muted: #d6dce6;
-  --on-navy-panel: rgba(255,255,255,.07);
-  --control-border: #9aa3b2;
-  --surface: #ffffff;
+  --gold-hover: #E0B12A;
+  --ink: #ecebe6;
+  --muted: #9ea7b5;
+  --body-ink: #cfd2d8;
+  --line: #28334a;
+  --rule: #ecebe6;
+  --bg: #070c15;
+  --surface: #070c15;
+  --panel: #070c15;
+  --focus: #8ab8ff;
+  --control-border: #7d8aa3;
   --print-ink: #000000;
+  --sans: "Helvetica Neue", Helvetica, Arial, "Segoe UI", Roboto, sans-serif;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; border-radius: 0; }
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 15px/1.55 var(--sans);
   overflow-wrap: anywhere;
+  counter-reset: sec;
 }
-a { color: var(--navy); text-underline-offset: 2px; }
-a:hover { color: var(--navy-2); }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.wrap { max-width: 46rem; margin: 0 auto; padding: 0 16px; }
-h1, h2, h3 { line-height: 1.2; margin: 0; }
+a { color: var(--gold); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--gold-hover); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.wrap { max-width: 60rem; margin: 0 auto; padding: 0 20px; }
+h1, h2, h3, h4 { margin: 0; font-family: var(--sans); font-weight: 700; line-height: 1.02; letter-spacing: -.02em; }
 
-/* Header */
-.site-head { background: var(--navy); color: var(--on-navy); border-bottom: 4px solid var(--gold); }
-.site-head .wrap { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-.eyebrow { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 .35rem; color: var(--muted); }
-.site-head .eyebrow { color: var(--gold); }
-.site-head h1 { font-size: 1.6rem; }
-.head-stats { display: grid; gap: .75rem; margin-top: 1.1rem; }
-.stat { background: var(--on-navy-panel); border-radius: var(--radius); padding: .75rem .9rem; }
-.stat-label { font-size: .8rem; color: var(--on-navy-muted); margin: 0; }
-.stat-value { font-size: 1.35rem; font-weight: 700; margin: .1rem 0 0; }
-.stat-note { font-size: .88rem; color: var(--on-navy-muted); margin: .2rem 0 0; }
+/* Masthead */
+.site-head { border-top: 10px solid var(--gold); }
+.site-head .wrap { padding-top: 1rem; padding-bottom: 2rem; }
+.eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; margin: 0 0 1rem; color: var(--muted); }
+.site-head .eyebrow { color: var(--ink); padding-bottom: .75rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
+.site-head h1 { font-size: clamp(1.9rem, 5.5vw, 3rem); max-width: 18ch; }
+.head-stats { display: grid; gap: 1.5rem; margin-top: 1.75rem; }
+.stat { border-top: 2px solid var(--rule); padding-top: .7rem; }
+.stat-label { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin: 0; }
+.stat-value { font-size: clamp(1.1rem, 3vw, 1.45rem); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; margin: .6rem 0 0; font-variant-numeric: tabular-nums; }
+#record { font-size: clamp(2.4rem, 7vw, 3.4rem); line-height: .95; letter-spacing: .1em; color: var(--gold); }
+.stat-note { font-size: .92rem; color: var(--muted); margin: .6rem 0 0; }
 
-main { padding: 1.5rem 0 2rem; }
-section { margin-bottom: 2rem; }
-.section-title { font-size: 1.2rem; color: var(--navy); margin-bottom: .75rem; }
+main { padding: 1rem 0 3rem; }
+.wrap > section { margin-bottom: 3rem; counter-increment: sec; }
+.section-title, .plan-head { border-top: 2px solid var(--rule); padding-top: .7rem; }
+.section-title, .plan-head .eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; color: var(--muted); font-family: var(--sans); line-height: 1.4; }
+.section-title { margin-bottom: 1.5rem; }
+.section-title::before, .plan-head .eyebrow::before { content: counter(sec, decimal-leading-zero); color: var(--gold); margin-right: 1.25rem; }
 
 /* Controls */
-.controls { background: var(--panel); border-radius: var(--radius); padding: 1rem; display: grid; gap: 1rem; }
-.field label, .field legend { display: block; font-weight: 700; margin-bottom: .4rem; color: var(--navy); }
+.controls { display: grid; gap: 1.75rem; }
+.field label, .field legend { display: block; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: .5rem; padding: 0; }
 .field fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 select {
-  width: 100%; min-height: 44px; font: inherit; color: var(--ink);
-  padding: .5rem .75rem; border: 1px solid var(--control-border); border-radius: 8px; background: var(--surface);
+  width: 100%; min-height: 48px; font: inherit; font-size: 1rem; font-weight: 700; color: var(--ink);
+  padding: .4rem 0; border: 0; border-bottom: 2px solid var(--rule); background: transparent; appearance: auto;
 }
+select option { background: var(--bg); color: var(--ink); }
 .field .radio-row {
-  display: flex; align-items: center; gap: .6rem; min-height: 44px;
-  padding: .35rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
-  margin-bottom: .4rem; cursor: pointer; font-weight: 400;
+  display: flex; align-items: center; gap: .85rem; min-height: 48px;
+  padding: .3rem 0; border: 0; border-bottom: 1px solid var(--line); background: transparent;
+  margin: 0; cursor: pointer; font-weight: 400; font-size: 1.02rem;
 }
-.field .radio-row input { width: 1.2rem; height: 1.2rem; margin: 0; accent-color: var(--navy); }
-.radio-row:has(input:checked) { border-color: var(--navy); box-shadow: inset 4px 0 0 var(--gold); }
+.field .radio-row:first-of-type { border-top: 1px solid var(--line); }
+.field .radio-row input { width: 1.15rem; height: 1.15rem; margin: 0; accent-color: var(--gold); }
+.radio-row:has(input:checked) { color: var(--gold); font-weight: 700; }
 .btn {
-  min-height: 44px; font: inherit; font-weight: 700; color: var(--on-navy); background: var(--navy);
-  border: 0; border-radius: 8px; padding: .6rem 1.1rem; cursor: pointer; width: 100%;
+  min-height: 48px; font: inherit; font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; font-weight: 700;
+  color: var(--gold); background: transparent; border: 2px solid var(--gold); padding: .6rem 1.4rem; cursor: pointer; width: 100%;
+  transition: background-color .15s, color .15s;
 }
-.btn:hover { background: var(--navy-2); }
-.hint { font-size: .88rem; color: var(--muted); margin: .4rem 0 0; }
+.btn:hover { background: var(--gold); color: var(--navy); }
+.hint { font-size: .88rem; color: var(--muted); margin: .6rem 0 0; }
 
 /* Itinerary */
-.plan-head { border-left: 4px solid var(--gold); padding-left: .85rem; margin-bottom: 1rem; }
-.plan-head h2 { font-size: 1.45rem; color: var(--navy); }
-.plan-sub { margin: .3rem 0 0; color: var(--ink); font-weight: 600; }
-.plan-arrival { margin: .15rem 0 0; color: var(--muted); }
-.plan-pack { margin: .5rem 0 0; color: var(--ink); }
-.note, .warn { border-radius: var(--radius); padding: .8rem 1rem; margin-bottom: 1rem; }
-.note { background: var(--panel); border: 1px solid var(--line); }
-.warn { background: var(--warn-bg); border: 1px solid var(--gold); }
+.plan-head { margin-bottom: 2rem; }
+.plan-head .eyebrow { margin: 0 0 1.25rem; }
+.plan-head h2 { font-size: clamp(1.6rem, 4.6vw, 2.3rem); letter-spacing: -.025em; }
+.plan-sub { margin: .75rem 0 0; font-weight: 700; font-size: 1rem; }
+.plan-arrival { margin: .2rem 0 0; color: var(--muted); }
+.plan-pack { margin: 1.25rem 0 0; max-width: 40rem; }
+.note, .warn { margin: 0 0 2rem; padding: .9rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--line); max-width: 46rem; }
+.warn { border-top: 3px solid var(--gold); }
 .note p, .warn p { margin: 0; }
-.day { margin-bottom: 1.25rem; }
-.day h3 { font-size: 1.05rem; color: var(--navy); padding-bottom: .35rem; border-bottom: 2px solid var(--line); margin-bottom: .25rem; }
+.day { display: block; margin-bottom: 1.5rem; }
+.day h3 { font-size: 1.2rem; padding-bottom: .6rem; border-bottom: 2px solid var(--rule); margin-bottom: 0; }
 .items { list-style: none; margin: 0; padding: 0; }
-.item { display: grid; grid-template-columns: 6.75rem 1fr; gap: .75rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
-.item:last-child { border-bottom: 0; }
-.time { font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
-.what strong { display: block; }
-.what p { margin: .2rem 0 0; }
-.item.key { background: var(--gold-soft); border-radius: 8px; padding-left: .5rem; padding-right: .5rem; }
-.verify { font-size: .88rem; color: var(--muted); }
-.eats { background: var(--gold-soft); border-left: 4px solid var(--gold); border-radius: 8px; padding: .8rem 1rem; margin-top: .75rem; break-inside: avoid; }
-.eats h4 { margin: 0 0 .3rem; font-size: 1rem; color: var(--navy); }
-.eats p { margin: 0 0 .4rem; }
-.eats ul { margin: 0; padding-left: 1.2rem; }
+.item { display: grid; grid-template-columns: 6.5rem 1fr; gap: .5rem 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.time { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; font-size: .95rem; padding-top: .12rem; }
+.what { max-width: 40rem; }
+.what strong { display: block; font-size: 1rem; letter-spacing: -.005em; }
+.what p { margin: .25rem 0 0; color: var(--body-ink); }
+.verify { font-size: .86rem; color: var(--muted); }
+.item.key { border-top: 3px solid var(--gold); border-bottom: 3px solid var(--gold); margin: 1rem 0; padding: 1.4rem 0; }
+.item.key .time { font-size: 1.05rem; }
+.item.key .what strong { font-size: clamp(1.35rem, 4vw, 1.8rem); letter-spacing: -.025em; line-height: 1.05; }
+.item.key .what p { font-size: 1rem; color: var(--ink); }
+.eats { margin-top: 1.5rem; padding-top: .8rem; border-top: 2px solid var(--rule); break-inside: avoid; max-width: 40rem; }
+.eats h4 { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin: 0 0 .5rem; }
+.eats p { margin: 0 0 .75rem; color: var(--muted); }
+.eats ul { margin: 0; padding: 0; list-style: none; }
+.eats li { font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; padding: .55rem 0; border-top: 1px solid var(--line); }
 
 /* Tips, season, changelog */
-.tips { background: var(--panel); border-radius: var(--radius); padding: 1rem 1rem .5rem; }
-.tips ul { margin: 0; padding-left: 1.2rem; }
-.tips li { margin-bottom: .55rem; }
+.tips ul { margin: 0; padding: 0; list-style: none; counter-reset: tip; max-width: 44rem; }
+.tips li { position: relative; padding: .85rem 0 .85rem 2.75rem; border-bottom: 1px solid var(--line); counter-increment: tip; }
+.tips li::before { content: counter(tip, decimal-leading-zero); position: absolute; left: 0; top: .95rem; color: var(--gold); font-size: .78rem; font-weight: 700; letter-spacing: .1em; }
 .season-list, .log { list-style: none; margin: 0; padding: 0; }
-.season-list li { display: grid; grid-template-columns: 5.5rem 1fr auto; gap: .5rem; padding: .55rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-.season-list .d { color: var(--muted); font-size: .92rem; }
-.season-list .r { font-weight: 700; text-align: right; }
-.pill { display: inline-block; font-size: .78rem; font-weight: 600; padding: .05rem .45rem; border-radius: 999px; border: 1px solid var(--gold); background: var(--gold-soft); color: var(--ink); }
-.log li { padding: .6rem 0; border-bottom: 1px solid var(--line); }
-.log time { display: block; font-size: .85rem; color: var(--muted); font-weight: 600; }
+.season-list li { display: grid; grid-template-columns: 4.75rem 1fr auto; gap: .5rem 1rem; padding: .8rem 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.season-list .d { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.season-list .r { font-weight: 700; text-align: right; color: var(--gold); font-variant-numeric: tabular-nums; }
+.pill { display: inline-block; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; padding: .1rem .5rem; border: 1px solid var(--gold); color: var(--gold); }
+.log li { padding: .8rem 0; border-bottom: 1px solid var(--line); }
+.log time { display: block; font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: .2rem; }
 
-footer { border-top: 1px solid var(--line); padding: 1.25rem 0 2rem; color: var(--muted); font-size: .9rem; }
-footer p { margin: 0; }
+footer { border-top: 2px solid var(--rule); padding: .9rem 0 3rem; color: var(--muted); font-size: .85rem; }
+footer p { margin: 0; max-width: 46rem; }
 
-@media (min-width: 40rem) {
-  .head-stats { grid-template-columns: 1fr 2fr; }
-  .controls { grid-template-columns: 1fr 1fr; align-items: start; }
+@media (min-width: 48rem) {
+  .wrap { padding: 0 40px; }
+  .head-stats { grid-template-columns: 1fr 1.6fr; gap: 2.5rem; }
+  .controls { grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: start; }
   .controls .full { grid-column: 1 / -1; }
   .btn { width: auto; }
+  .day { display: grid; grid-template-columns: 11rem 1fr; column-gap: 2rem; }
+  .day h3 { grid-column: 1; grid-row: 1 / span 3; align-self: start; position: sticky; top: 1.25rem; border-bottom: 0; border-top: 2px solid var(--rule); padding: .7rem 0 0; font-size: 1.15rem; }
+  .day .items, .day .eats { grid-column: 2; }
+  .day .items { border-top: 2px solid var(--rule); }
   .item { grid-template-columns: 8rem 1fr; }
+  .season-list li { grid-template-columns: 6rem 1fr auto; }
 }
 
-/* Parents mode: print only the itinerary */
+/* Parents mode: print only the itinerary, black on white */
 @media print {
   @page { margin: 0.6in; }
-  body { font-size: 11pt; color: var(--print-ink); background: var(--surface); }
+  :root {
+    --bg: #ffffff; --surface: #ffffff; --panel: #ffffff; --ink: #000000; --muted: #000000;
+    --gold: #000000; --line: #999999; --rule: #000000; --navy: #000000;
+  }
+  * { animation: none !important; box-shadow: none !important; }
+  body { font-size: 11pt; color: var(--print-ink); background: #ffffff; }
   .site-head, #controls, #tips, #season, #changelog, footer, button, select, input, .no-print { display: none !important; }
   main, .wrap { padding: 0; max-width: none; }
   #plan { margin: 0; }
-  .plan-head { border-left: 0; padding-left: 0; }
-  .plan-head h2 { font-size: 18pt; color: var(--print-ink); }
-  .eyebrow, .plan-sub, .plan-arrival, .plan-pack, .time, .day h3, .verify { color: var(--print-ink); }
-  .note, .warn { background: none; border: 1px solid var(--print-ink); }
-  .item.key { background: none; border-radius: 0; padding-left: 0; padding-right: 0; }
-  .eats { background: none; border: 1px solid var(--print-ink); }
-  .eats h4 { color: var(--print-ink); }
+  .plan-head { border-top: 0; padding-top: 0; }
+  .plan-head .eyebrow::before { content: none; }
+  .plan-head h2 { font-size: 20pt; color: var(--print-ink); }
+  .eyebrow, .plan-sub, .plan-arrival, .plan-pack, .time, .day h3, .verify, .eats h4, .what p { color: var(--print-ink); }
+  .note, .warn, .eats { border-color: var(--print-ink); }
+  .day { display: block; }
+  .day h3 { position: static; font-size: 14pt; border-top: 0; border-bottom: 2px solid #000; break-after: avoid; page-break-after: avoid; }
+  .day .items { border-top: 0; }
   .item { grid-template-columns: 1.3in 1fr; break-inside: avoid; page-break-inside: avoid; }
-  .day h3 { break-after: avoid; page-break-after: avoid; }
+  .item.key { border-top: 2px solid #000; border-bottom: 2px solid #000; margin: .5rem 0; padding: .6rem 0; }
+  .item.key .what strong { font-size: 16pt; }
+  .eats li { font-size: 12pt; }
   a { color: var(--print-ink); text-decoration: none; }
 }
 </style>
@@ -242,15 +265,18 @@ const SEASON = {
   year: 2026,
   team: "Notre Dame Fighting Irish",
   games: [
-    { opponent: "Wisconsin",      date: "2026-09-06", site: "neutral", venue: "Lambeau Field",      kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
-    { opponent: "Rice",           date: "2026-09-12", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
-    { opponent: "Michigan State", date: "2026-09-19", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: true,  result: "W",  score: "to confirm" },
+    { opponent: "Wisconsin",      date: "2026-09-06", site: "neutral", venue: "Lambeau Field",      kickoff: "19:30", played: true,  result: "W",  score: "41-13" },
+    { opponent: "Rice",           date: "2026-09-12", site: "home",    venue: "Notre Dame Stadium", kickoff: "15:30", played: true,  result: "W",  score: "52-0" },
+    { opponent: "Michigan State", date: "2026-09-19", site: "home",    venue: "Notre Dame Stadium", kickoff: "19:30", played: true,  result: "W",  score: "27-10" },
     { opponent: "Purdue",         date: "2026-09-26", site: "away",    venue: "",                   kickoff: "TBA", played: true,  result: "W",  score: "49-10" },
-    { opponent: "Stanford",       date: "2026-10-10", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
-    { opponent: "Navy",           date: "2026-10-31", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
-    { opponent: "Miami",          date: "2026-11-07", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
-    { opponent: "Boston College", date: "2026-11-14", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null },
-    { opponent: "SMU",            date: "2026-11-21", site: "home",    venue: "Notre Dame Stadium", kickoff: "TBA", played: false, result: null, score: null }
+    { opponent: "North Carolina", date: "2026-10-03", site: "away",    venue: "",                   kickoff: "12:00", played: false, result: null, score: null },
+    { opponent: "Stanford",       date: "2026-10-10", site: "home",    venue: "Notre Dame Stadium", kickoff: "15:30", played: false, result: null, score: null },
+    { opponent: "BYU",            date: "2026-10-17", site: "away",    venue: "",                   kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "Navy",           date: "2026-10-31", site: "away",    venue: "",                   kickoff: "TBA", played: false, result: null, score: null },
+    { opponent: "Miami",          date: "2026-11-07", site: "home",    venue: "Notre Dame Stadium", kickoff: "19:30", played: false, result: null, score: null },
+    { opponent: "Boston College", date: "2026-11-14", site: "home",    venue: "Notre Dame Stadium", kickoff: "15:30", played: false, result: null, score: null },
+    { opponent: "SMU",            date: "2026-11-21", site: "home",    venue: "Notre Dame Stadium", kickoff: "19:30", played: false, result: null, score: null },
+    { opponent: "Syracuse",       date: "2026-11-28", site: "away",    venue: "",                   kickoff: "TBA", played: false, result: null, score: null }
   ]
 };
 
@@ -258,6 +284,7 @@ const SEASON = {
    CHANGELOG — newest entry first. Add one entry per weekly update.
    ===================================================================== */
 const CHANGELOG = [
+  { date: "2026-09-29", text: "Scores entered for Wisconsin 41-13, Rice 52-0, Michigan State 27-10. Kickoff times set for the remaining games. Navy moved to an away game; North Carolina, BYU and Syracuse added." },
   { date: "2026-09-28", text: "Planner published. Season data entered through the Purdue game." }
 ];
 
